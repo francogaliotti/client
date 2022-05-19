@@ -1,23 +1,37 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client'
 import './App.css';
 
+let socket
+const CONNECTION_PORT = "localhost:8080/";
+
 function App() {
+
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [room, setRoom] = useState("")
+  const [username, setUsername] = useState("")
+
+  useEffect(() => {
+    socket = io(CONNECTION_PORT,  { transports : ['websocket'] })
+  }, [CONNECTION_PORT])
+
+  const connectToRoom = () => {
+    socket.emit('join_room', room)
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {!loggedIn ? (
+        <div className='logIn'>
+          <div className='inputs'>
+            <input type='text' placeholder='Name...' onChange={(e)=>{setUsername(e.target.value)}}></input>
+            <input type='text' placeholder='Room...' onChange={(e)=>{setRoom(e.target.value)}}></input>
+          </div>
+          <button onClick={connectToRoom}>Enter Chat</button>
+        </div>
+      ) : (
+        <div className='loggedIn'></div>
+      )}
     </div>
   );
 }
