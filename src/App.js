@@ -1,37 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client'
 import './App.css';
+import Chat from './Chat'
 
-let socket
-const CONNECTION_PORT = "localhost:8080/";
+const socket = io("localhost:8080/")
+
 
 function App() {
 
-  const [loggedIn, setLoggedIn] = useState(false)
+  const [showChat, setShowChat] = useState(false)
   const [room, setRoom] = useState("")
   const [username, setUsername] = useState("")
 
   useEffect(() => {
-    socket = io(CONNECTION_PORT,  { transports : ['websocket'] })
-  }, [CONNECTION_PORT])
 
-  const connectToRoom = () => {
-    socket.emit('join_room', room)
+  }, [])
+
+  const joinRoom = () => {
+    if (username !== "" && room !== "") {
+      socket.emit("join_room", room);
+      setShowChat(true);
+    }
   }
 
   return (
     <div className="App">
-      {!loggedIn ? (
-        <div className='logIn'>
-          <div className='inputs'>
-            <input type='text' placeholder='Name...' onChange={(e)=>{setUsername(e.target.value)}}></input>
-            <input type='text' placeholder='Room...' onChange={(e)=>{setRoom(e.target.value)}}></input>
-          </div>
-          <button onClick={connectToRoom}>Enter Chat</button>
+      {!showChat ? (
+        <div className="joinChatContainer">
+          <h3>Join A Chat</h3>
+          <input
+            type="text"
+            placeholder="John..."
+            onChange={(event) => {
+              setUsername(event.target.value);
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Room ID..."
+            onChange={(event) => {
+              setRoom(event.target.value);
+            }}
+          />
+          <button onClick={joinRoom}>Join A Room</button>
         </div>
-      ) : (
-        <div className='loggedIn'></div>
-      )}
+      ) : <Chat socket={socket} username={username} room={room} /> 
+      }
     </div>
   );
 }
